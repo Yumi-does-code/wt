@@ -108,6 +108,17 @@ io.on("connection", function(socket) {
       });
   });
 
+  socket.on("lobbySend", obj => {
+    console.log(obj)
+    if (!obj) return;
+    if (!obj.type) return;
+    if (!obj.func) return;
+    if (!obj.parameters) return;
+    console.log(obj)
+    io.to(userMap[socket.id]).broadcast("lobbySend", obj);
+
+  });
+
   function leave(d, s) {
     let id = socket.id;
     if (!userMap[id]) return;

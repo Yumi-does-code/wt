@@ -1,5 +1,8 @@
 
 const app = require("express")();
+var cors = require('cors');
+cors({credentials: true, origin: true});
+app.use(cors());
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 const port = process.env.PORT || 3000;
@@ -115,8 +118,21 @@ io.on("connection", function(socket) {
     if (!obj.func) return;
     if (!obj.parameters) return;
     console.log(obj)
-    io.to(userMap[socket.id]).broadcast("lobbySend", obj);
+    socket.to(userMap[socket.id]).emit("lobbySend", obj);
 
+  });
+
+  socket.on("lobbyState", state => {
+    const lobby = lobbies[userMap[socket.id]];
+
+    if (!lobby || (socket.id) != lobby.owner) return;
+    state.currentTime = Math.round(state.currentTime);
+    console.log(state)
+    io.to(userMap[socket.id]).emit("lobbyState", {
+      from: socket.id,
+      change: lobby.owner === socket.id,
+      state: state,
+    });
   });
 
   function leave(d, s) {
